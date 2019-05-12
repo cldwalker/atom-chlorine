@@ -12,21 +12,43 @@
             [repl-tooling.integrations.connection :as conn]
             [repl-tooling.editor-integration.connection :as connection]
             [chlorine.ui.atom :as atom]
-            [clojure.core.async :as async :include-macros true]))
+            [clojure.core.async :as async :include-macros true]
+            [repl-tooling.editor-integration.renderer :as render]
+            [clojure.walk :as walk]))
 
 (defn- handle-disconnect! []
   (swap! state assoc
          :repls {:clj-eval nil
                  :cljs-eval nil
                  :clj-aux nil}
-         :connection nil)
+         :connection nil
+         :results {})
   (atom/info "Disconnected from REPLs" ""))
+
+(defn- patch-element [element id new-val]
+  (let [dref (cond-> element (instance? reagent.ratom/RAtom element) deref)]
+    (prn :INST
+         (instance? render/Patch dref)
+         id
+         (:id dref))
+    (if (and (instance? render/Patch dref) (= id (:id dref)))
+      (prn :OKAY? (swap! element assoc :obj-ratom
+                         (render/parse-result {:result new-val :parsed? true}
+                                              (:repl dref))))
+      dref)))
+
+(defn- treat-stdout [out]
+  (if (re-find #"#repl-tooling/patch \[.*" (str out))
+    (let [[id new-val] (-> out helpers/read-result helpers/obj)
+          values (-> @state :results vals)]
+      (walk/prewalk #(patch-element % id new-val) values))
+    (some-> ^js @console/console (.stdout out))))
 
 (defn connect! [host port]
   (let [p (connection/connect-unrepl!
            host port
            {:on-stdout
-            #(some-> ^js @console/console (.stdout %))
+            treat-stdout
             :on-stderr
             #(some-> ^js @console/console (.stderr %))
             :on-result
@@ -53,16 +75,12 @@
   (when (contains? output :result)
     (inline/render-on-console! @console/console output)))
 
-(def callback-fn (atom callback))
-
 (defn connect-cljs! [host port]
-  (let [repl (cljs/repl :clj-eval host port #(@callback-fn %))]
+  (let [repl (cljs/repl :clj-eval host port callback)]
     (eval/evaluate repl ":ok" {} (fn []
                                    (atom/info "ClojureScript REPL connected" "")
-                                   (.. js/atom
-                                       -workspace
-                                       (open "atom://chlorine/console"
-                                             #js {:split "right"}))
+                                   (console/open-console (-> @state :config :console-pos)
+                                                         #(connection/disconnect!))
                                    (swap! state
                                           #(-> %
                                                (assoc-in [:repls :cljs-eval] repl)
@@ -78,7 +96,7 @@
         dirs (->> js/atom .-project .getDirectories (map #(.getPath ^js %)))]
     (.. (conn/auto-connect-embedded! host port dirs
                                      {:on-stdout
-                                      #(some-> ^js @console/console (.stdout %))
+                                      treat-stdout
                                       :on-result
                                       #(when (:result %)
                                          (inline/render-on-console! @console/console %))})
@@ -90,13 +108,19 @@
                    (swap! state assoc-in [:repls :cljs-eval] %)
                    (atom/info "ClojureScript REPL connected" "")))))))
 
+(defn- prepare-result [inline-result parsed]
+  (swap! state assoc-in [:results inline-result] parsed)
+  (js/setTimeout #(swap! state update :results dissoc inline-result)
+                 10000))
 (defn set-inline-result [inline-result eval-result]
-  (if (contains? eval-result :result)
-    (inline/render-inline! inline-result eval-result)
-    (do
-      (some-> @state :repls :clj-eval
-              (eval/evaluate "(clojure.repl/pst)" {} identity))
-      (inline/render-error! inline-result eval-result))))
+  (let [parsed (render/parse-result eval-result (-> @state :repls :clj-eval))]
+    (prepare-result inline-result parsed)
+    (if (contains? eval-result :result)
+      (inline/render-inline! inline-result parsed)
+      (do
+        (some-> @state :repls :clj-eval
+                (eval/evaluate "(clojure.repl/pst)" {} identity))
+        (inline/render-error! inline-result eval-result)))))
 
 (defn need-cljs? [editor]
   (or
@@ -139,7 +163,8 @@
          col (.. range -start -column)]
 
      (if (need-cljs? editor)
-       (eval-cljs editor ns-name filename row col code result opts #(set-inline-result result %))
+       (eval-cljs editor ns-name filename row col code result opts
+                  #(set-inline-result result %))
        (some-> @state :repls :clj-eval
                (eval/evaluate code
                               {:namespace ns-name :row row :col col :filename filename

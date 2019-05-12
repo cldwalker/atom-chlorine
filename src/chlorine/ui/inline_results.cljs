@@ -26,9 +26,8 @@
         div (create-div! parsed false)]
     (some-> console (.result div))))
 
-(defn render-inline! [^js inline-result parsed-result]
-  (let [parsed-ratom (render/parse-result parsed-result (-> @state :repls :clj-eval))
-        div (create-div! parsed-ratom false)]
+(defn render-inline! [^js inline-result parsed-ratom]
+  (let [div (create-div! parsed-ratom false)]
     (.setContent inline-result div #js {:error false})))
 
 (defn render-error! [^js inline-result parsed-result]

@@ -7,8 +7,10 @@
             [repl-tooling.repl-client :as repl-client]
             [repl-tooling.repl-client.clojure :as clj-repl]
             [chlorine.aux :as aux]
-            [repl-tooling.editor-integration.connection :as connection]
-            ["fs" :refer [existsSync readFileSync]]))
+            [repl-tooling.editor-integration.connection :as connection]))
+
+(def ^private existsSync (-> "fs" js/require .-existsSync))
+(def ^private readFileSync (-> "fs" js/require .-readFileSync))
 
 (defonce local-state
   (r/atom {:hostname "localhost"

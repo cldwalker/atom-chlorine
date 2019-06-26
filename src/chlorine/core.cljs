@@ -8,7 +8,8 @@
             [chlorine.configs :as configs]
             [chlorine.ui.atom :as atom]
             [chlorine.ui.console :as console]
-            [chlorine.features.code :as code]))
+            [chlorine.features.code :as code]
+            ["atom-package-deps" :as deps]))
 
 (def config (configs/get-configs))
 
@@ -20,9 +21,6 @@
   (.add @aux/subscriptions
         (.. js/atom -workspace
             (observeTextEditors subscribe-editor-events))))
-
-(defn- install-dependencies-maybe []
-  (-> (.install (js/require "atom-package-deps") "chlorine")))
 
 (def commands
   (fn []
@@ -51,7 +49,7 @@
 
               :go-to-var-definition code/goto-var})))
 
-(def aux #js {:deps install-dependencies-maybe
+(def aux #js {:deps identity ;#(deps/install "chlorine")
               :reload aux/reload-subscriptions!
               :observe_editor observe-editors
               :observe_config configs/observe-configs!

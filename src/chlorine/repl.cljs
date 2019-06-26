@@ -12,8 +12,9 @@
             [repl-tooling.integrations.connection :as conn]
             [repl-tooling.editor-integration.connection :as connection]
             [chlorine.ui.atom :as atom]
-            [clojure.core.async :as async :include-macros true]
-            ["atom" :refer [CompositeDisposable]]))
+            [clojure.core.async :as async :include-macros true]))
+
+(def ^:private CompositeDisposable (-> "atom" js/require .-CompositeDisposable))
 
 (def ^:private commands-subs (atom (CompositeDisposable.)))
 

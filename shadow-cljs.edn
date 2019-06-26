@@ -9,6 +9,7 @@
  :builds
  {:dev {:target :node-library
         :dev {:closure-defines {chlorine.aux/TESTS true}}
+        :js-options {:js-provider :shadow}
 
         :compiler-options {:infer-externs :auto}
         :exports {:config chlorine.core/config

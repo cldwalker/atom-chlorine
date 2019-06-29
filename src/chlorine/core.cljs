@@ -9,7 +9,7 @@
             [chlorine.ui.atom :as atom]
             [chlorine.ui.console :as console]
             [chlorine.features.code :as code]
-            ["atom-package-deps" :as deps]))
+            #_["atom-package-deps" :as deps]))
 
 (def config (configs/get-configs))
 

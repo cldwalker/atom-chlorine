@@ -10,6 +10,35 @@
 * Problems when we stack multiple evaluations (see FIXME on repl-tooling)
 * Fix problems with unreadable forms
 
+## NEXT
+- Changed defaults for auto-reload projects
+- Rendering correctly the rations
+- Fixed load-file on non-saved or non-editor tabs (https://github.com/mauricioszabo/atom-chlorine/issues/75)
+
+## 0.1.10
+- Fixed autocomplete on Clojure
+
+## 0.1.9
+- Fix goto var definition failing when the var was defined evaluating blocks, or with load-file
+
+## 0.1.8
+- Fix GOTO definition
+- Takes up less space on status bar
+
+## 0.1.7
+- Fixes Chlorine not activating on MacOSX (https://github.com/mauricioszabo/atom-chlorine/issues/67)
+
+## 0.1.5
+- Fixes compilation problems
+
+## 0.1.4 (unpublished)
+- Autocomplete now honors config _Minimum Word Length_ from Atom's config
+
+## 0.1.3
+- Break on Clojure (https://github.com/mauricioszabo/repl-tooling/issues/6)
+- Fixed "burst commands" (https://github.com/mauricioszabo/repl-tooling/issues/24)
+- Fix Lumo's console error (https://github.com/mauricioszabo/atom-chlorine/issues/60)
+
 ## 0.1.2
 - Auto-adding port number if the project file is a shadow-cljs build project
 - Config to open console on bottom

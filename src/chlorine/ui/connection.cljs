@@ -20,12 +20,14 @@
    [:div.block
     [:label "Host: "]
     [:input.input-text {:type "text"
+                        :tabindex "1"
                         :value (:hostname @local-state)
                         :on-change #(swap! local-state assoc :hostname (-> % .-target .-value))
                         :on-focus #(-> % .-target .select)}]]
    [:div.block
     [:label "Port: "]
     [:input.input-text {:type "text"
+                        :tabindex "2"
                         :placeholder "port"
                         :value (:port @local-state)
                         :on-change #(swap! local-state assoc :port (-> % .-target .-value int))
@@ -54,7 +56,7 @@
         port-file (-> js/atom .-project .getPaths first
                       (str "/.shadow-cljs/socket-repl.port"))]
     (when (existsSync port-file)
-      (swap! local-state assoc :port (-> port-file readFileSync str int)))
+      (swap! local-state assoc :port (-> port-file readFileSync .toString int)))
     (r/render [view] div)
     (aux/save-focus! div)
     (doseq [elem (-> div (.querySelectorAll "input") as-clj)]
@@ -86,6 +88,3 @@
                                                       "Clojure REPL"))
     (-> @state :repls :cljs-eval nil?) (repl/connect-self-hosted)
     :else (already-connected)))
-
-(defn disconnect! []
-  (connection/disconnect!))

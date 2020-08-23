@@ -363,6 +363,7 @@
 
 (def exports
   #js {:eval_and_present eval-and-present
+       :evaluate_aux evaluate-aux
        :connect_bang connect!
        :eval_and_present_at_pos (fn [code]
                                   (let [editor (atom/current-editor)]

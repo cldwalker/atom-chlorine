@@ -43,5 +43,17 @@
 (defonce registered
   (register-console! @aux/subscriptions))
 
+<<<<<<< Updated upstream
 (defn result [parsed-result]
   (console/result parsed-result (:parse @state)))
+=======
+(defn open-console [split destroy-fn]
+  (.. @console
+      (open #js {:split split :searchAllPanes true :activatePane false
+                 :activateItem false})
+      (then #(aset % "destroy" destroy-fn))
+      (then #(delete ".content"))))
+
+(def exports
+  #js {:console (fn [] @console)})
+>>>>>>> Stashed changes

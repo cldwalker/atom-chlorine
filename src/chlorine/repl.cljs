@@ -203,6 +203,7 @@
   (inline/clear-results! (atom/current-editor)))
 
 (def exports
+<<<<<<< Updated upstream
   #js {:get_top_block #(get-code "top-block")
        :get_block #(get-code "block")
        :get_var #(get-code "var")
@@ -210,3 +211,15 @@
        :get_namespace #(get-code "ns")
        :evaluate_and_present evaluate-and-present
        :evaluate_interactive evaluate-interactive})
+=======
+  #js {:eval_and_present eval-and-present
+       :console (fn [] @console/console)
+       :connect_bang connect!
+       :eval_and_present_at_pos (fn [code]
+                                  (let [editor (atom/current-editor)]
+                                    (eval-and-present editor
+                                                      (ns-for editor)
+                                                      (.getPath editor)
+                                                      (. editor getSelectedBufferRange)
+                                                      code)))})
+>>>>>>> Stashed changes

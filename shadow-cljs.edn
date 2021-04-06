@@ -26,6 +26,7 @@
                   :commands chlorine.core/commands
                   :aux chlorine.core/aux
                   :repl chlorine.repl/exports
+                  :console chlorine.ui.console/exports
 
                   :everything-provider
                   chlorine.providers-consumers.everything/activate
